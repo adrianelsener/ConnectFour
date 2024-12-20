@@ -99,15 +99,32 @@ public class Board
     private char DiagonalWinner(char player, int r, int c)
     {
         var diagonals = GetDiagonals(r, c);
-        var diagUp = new string(diagonals[0]);
-        var diagDown = new string(diagonals[1]);
-        var win = new string(player, CONNECT_HOW_MANY);
-        if (diagUp.Contains(win) || diagDown.Contains(win))
-        {
-            return player;
-        }
-        return EMPTY;
+        return HasWinningSequence(diagonals[0], player) || HasWinningSequence(diagonals[1], player)
+            ? player
+            : EMPTY;
     }
+
+    private bool HasWinningSequence(char[] diagonal, char player)
+    {
+        int count = 0;
+        foreach (var cell in diagonal)
+        {
+            if (cell == player)
+            {
+                count++;
+                if (count == CONNECT_HOW_MANY)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                count = 0;
+            }
+        }
+        return false;
+    }
+
 
     private char[] GetRow(int r)
     {
@@ -131,26 +148,34 @@ public class Board
 
     private char[][] GetDiagonals(int r, int c)
     {
-        // Woe to thee, who entered here, for you dug too deep and unearthed daemons of the otherworld!
-        // https://youtu.be/TDIr9on8Rhw?t=18 https://youtu.be/Mue6Vc_T9Ds https://youtu.be/1T14eOUf-28?t=7
         var raising = new List<char>();
         var falling = new List<char>();
-        for (int i = r, j = c; i >= 0 && j < COLS; i--, j++)
+
+        int i = r, j = c;
+        while (i >= 0 && j >= 0)
+        {
+            i--; j--;
+        }
+        i++; j++;
+        while (i < ROWS && j < COLS)
         {
             raising.Add(fields[i][j]);
+            i++; j++;
         }
-        for (int i = r, j = c; i < ROWS && j >= 0; i++, j--)
+
+        i = r; j = c;
+        while (i < ROWS && j >= 0)
         {
-            raising.Add(fields[i][j]);
+            i++; j--;
         }
-        for (int i = r, j = c; i < ROWS && j < COLS; i++, j++)
+        i--; j++;
+        while (i >= 0 && j < COLS)
         {
             falling.Add(fields[i][j]);
+            i--; j++;
         }
-        for (int i = r, j = c; i >= 0 && j >= 0; i--, j--)
-        {
-            falling.Add(fields[i][j]);
-        }
+
         return new char[][] { raising.ToArray(), falling.ToArray() };
     }
+
 }
